@@ -15,11 +15,46 @@ CookieConsent.run({
             flipButtons: false
         }
     },
+    // Nécessaire pour que CookieConsent sache qu'il doit gérer le Google Consent Mode
+     autoDetectServices: true, // Ou configurer les services manuellement
+
+    // Configuration du Consent Mode par défaut (avant que l'utilisateur ne fasse un choix)
+    // Il est recommandé de tout mettre à 'denied' par défaut pour être conforme au RGPD
+    consentDefaults: {
+        'analytics_storage': 'denied',
+    },
     categories: {
         necessary: {
-            readOnly: true
+            readOnly: true,
+            enabled: true
         },
-        analytics: {}
+        analytics: {
+            enabled: false,
+            autoClear: {
+                cookies: [
+                    { name: /^_ga/, }, // Pour Google Analytics
+                    { name: /^_gid/, },
+                    { name: /^_gat/, },
+                    ]
+                },
+            // Important pour le Google Consent Mode
+                services: {
+                    googleAnalytics: { // Nom arbitraire pour votre service
+                        label: 'Google Analytics',
+                        onAccept: () => {
+                            // N'est plus forcément nécessaire de faire gtag('consent', 'update'...) ici
+                            // si autoDetectServices est bien géré ou si vous utilisez
+                            // la configuration des services dans GTM comme expliqué plus bas.
+                            // CookieConsent devrait mettre à jour le consent mode automatiquement.
+                        },
+                        onRevoke: () => {
+                            // Idem
+                        },
+                        // La liaison avec GCM se fait via les clés comme 'analytics_storage'
+                        // qui sont mises à jour par CookieConsent.
+                    }
+                }
+        }
     },
     language: {
         default: "fr",
